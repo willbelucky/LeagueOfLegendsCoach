@@ -6,4 +6,4 @@
 .idea/workspace.xml
 
 # data source files
-.csv
+*.csv
