@@ -108,7 +108,10 @@ def get_champs():
         role_assigned_champ[NAME] = role + '_' + role_assigned_champ[NAME]
         role_assigned_champs.append(role_assigned_champ)
 
-    champs = pd.concat(role_assigned_champs)
+
+    champs = pd.concat(role_assigned_champs, ignore_index=True)
+    champs = champs.sort_values(by=['id', 'role'])
+    champs = champs.reset_index(drop=True)
     champs = champs.rename(columns={"id": CHAMPION_ID})
     champs = champs[[CHAMPION_ID, ROLE, NAME]]
     return champs
@@ -162,5 +165,5 @@ def get_participants():
 
 
 if __name__ == '__main__':
-    print(get_participants())
-    # print(get_champs())
+    #print(get_participants())
+    print(get_champs())
