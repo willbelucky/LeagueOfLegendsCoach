@@ -4,6 +4,7 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/workspace.xml
+data/__pycache__/
 
 # Data source files
 *.csv
