@@ -165,5 +165,5 @@ def get_participants():
 
 
 if __name__ == '__main__':
-    #print(get_participants())
+    print(get_participants())
     print(get_champs())
