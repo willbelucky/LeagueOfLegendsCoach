@@ -33,7 +33,7 @@ ROLE = 'role'
 ROLES = ['Top', 'Jungle', 'Mid', 'Carry', 'Support']
 
 
-def _download_csv(remote_url, local_dir):
+def download_csv(remote_url, local_dir):
     """
     Download csv file from remote repository and save it to local folder.
 
@@ -67,14 +67,14 @@ def _get_stats():
         stats1 = pd.read_csv(LOCAL_STATS1_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        stats1 = _download_csv(REMOTE_STATS1_URL, LOCAL_STATS1_DIR)
+        stats1 = download_csv(REMOTE_STATS1_URL, LOCAL_STATS1_DIR)
 
     if Path(LOCAL_STATS2_DIR).exists():
         # if it exists, load csv file.
         stats2 = pd.read_csv(LOCAL_STATS2_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        stats2 = _download_csv(REMOTE_STATS2_URL, LOCAL_STATS2_DIR)
+        stats2 = download_csv(REMOTE_STATS2_URL, LOCAL_STATS2_DIR)
 
     stats = pd.concat([stats1, stats2])
 
@@ -99,7 +99,7 @@ def get_champs():
         champs = pd.read_csv(LOCAL_CHAMPS_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        champs = _download_csv(REMOTE_CHAMPS_URL, LOCAL_CHAMPS_DIR)
+        champs = download_csv(REMOTE_CHAMPS_URL, LOCAL_CHAMPS_DIR)
 
     role_assigned_champs = []
     for index, role in enumerate(ROLES):
@@ -133,7 +133,7 @@ def get_participants():
         participants = pd.read_csv(LOCAL_PARTICIPANTS_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        participants = _download_csv(REMOTE_PARTICIPANTS_URL, LOCAL_PARTICIPANTS_DIR)
+        participants = download_csv(REMOTE_PARTICIPANTS_URL, LOCAL_PARTICIPANTS_DIR)
 
     # do data processing
     stats = _get_stats()
