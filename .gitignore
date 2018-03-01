@@ -5,5 +5,8 @@
 .idea/modules.xml
 .idea/workspace.xml
 
-# data source files
+# Data source files
 *.csv
+
+# Virtual environment files
+venv
