@@ -242,15 +242,30 @@ def get_other_team_loses():
 
 
 if __name__ == '__main__':
-    same_team_matches = pd.DataFrame(get_same_team_matches())
-    same_team_matches.to_csv(SAME_TEAM_MATCHES_CSV)
-    same_team_wins = pd.DataFrame(get_same_team_wins())
-    same_team_wins.to_csv(SAME_TEAM_WINS_CSV)
-    same_team_loses = pd.DataFrame(get_same_team_loses())
-    same_team_loses.to_csv(SAME_TEAM_LOSES_CSV)
-    other_team_matches = pd.DataFrame(get_other_team_matches())
-    other_team_matches.to_csv(OTHER_TEAM_MATCHES_CSV)
-    other_team_wins = pd.DataFrame(get_other_team_wins())
-    other_team_wins.to_csv(OTHER_TEAM_WINS_CSV)
-    other_team_loses = pd.DataFrame(get_other_team_loses())
-    other_team_loses.to_csv(OTHER_TEAM_LOSES_CSV)
+    from multiprocessing.dummy import Pool as ThreadPool
+    import multiprocessing
+
+
+    def save_processed_data(*args):
+        print('Start {}'.format(multiprocessing.Process()))
+        func, path = args[0]
+        same_team_matches = pd.DataFrame(func())
+        same_team_matches.to_csv(path)
+        print('Done {}'.format(multiprocessing.Process()))
+        return same_team_matches
+
+
+    pool = ThreadPool(6)
+    args = [
+        (get_same_team_matches, SAME_TEAM_MATCHES_CSV,),
+        (get_same_team_wins, SAME_TEAM_WINS_CSV,),
+        (get_same_team_loses, SAME_TEAM_LOSES_CSV,),
+        (get_other_team_matches, OTHER_TEAM_MATCHES_CSV,),
+        (get_other_team_wins, OTHER_TEAM_WINS_CSV,),
+        (get_other_team_loses, OTHER_TEAM_LOSES_CSV,)
+    ]
+    results = pool.map_async(save_processed_data, args)
+
+    pool.close()
+    pool.join()
+    print('Finally done!')
