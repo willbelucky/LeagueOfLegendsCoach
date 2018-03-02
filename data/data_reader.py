@@ -33,18 +33,23 @@ ROLE = 'role'
 ROLES = ['Top', 'Jungle', 'Mid', 'Carry', 'Support']
 
 
-def download_csv(remote_url, local_dir):
+def download_csv(remote_url, local_dir, header=False):
     """
     Download csv file from remote repository and save it to local folder.
 
     :param remote_url: (string) An URL of a remote file.
     :param local_dir: (string) A local file path.
+    :param header: (bool) If header is True, read header and index of csv file, else don't read and save header and
+        index.
 
     :return table: (DataFrame)
     """
+    read_header = 'infer'
+    if not header:
+        read_header = None
     if remote_url is not None:
-        table = pd.read_csv(remote_url, low_memory=False, encoding=ENCODING)
-        table.to_csv(local_dir, encoding=ENCODING)
+        table = pd.read_csv(remote_url, low_memory=False, encoding=ENCODING, header=read_header)
+        table.to_csv(local_dir, header=header, index=False, encoding=ENCODING)
         print('Download a csv file from {}.'.format(remote_url))
     else:
         raise FileNotFoundError('A csv file is not exist in {}.'.format(remote_url))
@@ -60,21 +65,20 @@ def _get_stats():
         columns participant_id  | (int) The id of participants
                 win             | (int) 1 for win, 0 for lose.
     """
-    pass
     # check local csv file exists or not.
     if Path(LOCAL_STATS1_DIR).exists():
         # if it exists, load csv file.
         stats1 = pd.read_csv(LOCAL_STATS1_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        stats1 = download_csv(REMOTE_STATS1_URL, LOCAL_STATS1_DIR)
+        stats1 = download_csv(REMOTE_STATS1_URL, LOCAL_STATS1_DIR, True)
 
     if Path(LOCAL_STATS2_DIR).exists():
         # if it exists, load csv file.
         stats2 = pd.read_csv(LOCAL_STATS2_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        stats2 = download_csv(REMOTE_STATS2_URL, LOCAL_STATS2_DIR)
+        stats2 = download_csv(REMOTE_STATS2_URL, LOCAL_STATS2_DIR, True)
 
     stats = pd.concat([stats1, stats2])
 
@@ -92,14 +96,13 @@ def get_champs():
                 role        | (int) 0: Top, 1: Jungle, 2: Mid, 3: Carry, 4: Support
                 name        | (str) The name of champions
     """
-    pass
     # check local csv file exists or not.
     if Path(LOCAL_CHAMPS_DIR).exists():
         # if it exists, load csv file.
         champs = pd.read_csv(LOCAL_CHAMPS_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        champs = download_csv(REMOTE_CHAMPS_URL, LOCAL_CHAMPS_DIR)
+        champs = download_csv(REMOTE_CHAMPS_URL, LOCAL_CHAMPS_DIR, True)
 
     role_assigned_champs = []
     for index, role in enumerate(ROLES):
@@ -133,7 +136,7 @@ def get_participants():
         participants = pd.read_csv(LOCAL_PARTICIPANTS_DIR, low_memory=False, encoding=ENCODING)
     else:
         # else, download csv file from remote repository and save it to local folder.
-        participants = download_csv(REMOTE_PARTICIPANTS_URL, LOCAL_PARTICIPANTS_DIR)
+        participants = download_csv(REMOTE_PARTICIPANTS_URL, LOCAL_PARTICIPANTS_DIR, True)
 
     # do data processing
     stats = _get_stats()
