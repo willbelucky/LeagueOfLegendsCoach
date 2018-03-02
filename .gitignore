@@ -9,5 +9,9 @@ data/__pycache__/
 # Data source files
 *.csv
 
+# Model persistence files
+*.pkl
+
 # Virtual environment files
 venv
+stats/__pycache__/
