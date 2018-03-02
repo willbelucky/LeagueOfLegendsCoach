@@ -3,16 +3,19 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 2. 28.
 """
-import pandas as pd
-import numpy as np
+from pathlib import Path
 
-from data.data_reader import download_csv
-from data.data_processor import CHAMPION_SIZE
-from stats.distance_calculator import COLLABORATIVE_DISTANCES_PATH, COMPETITIVE_DISTANCES_PATH
+import numpy as np
+import pandas as pd
+
+from data.data_reader import download_csv, ENCODING
 
 # TODO: Not yet calculated. Updated soon.
-REMOTE_COLLABORATIVE_DISTANCES_URL = ''
-REMOTE_COMPETITIVE_DISTANCES_URL = ''
+REMOTE_COLLABORATIVE_DISTANCES_URL = 'https://www.dropbox.com/s/x8m2mn3rszxu94p/collaborative_distances.csv?dl=1'
+REMOTE_COMPETITIVE_DISTANCES_URL = 'https://www.dropbox.com/s/rxrvsw164xuayru/competitive_distances.csv?dl=1'
+
+LOCAL_COLLABORATIVE_DISTANCES_DIR = 'stats/collaborative_distances.csv'
+LOCAL_COMPETITIVE_DISTANCES_DIR = 'stats/competitive_distances.csv'
 
 
 def get_collaborative_distances():
@@ -21,15 +24,21 @@ def get_collaborative_distances():
     :return collaborative_distances: (ndarray[float])
     """
     # Check COLLABORATIVE_DISTANCES_PATH.
-
-    # If COLLABORATIVE_DISTANCES_PATH exists, read csv.
-
-    # Else, download collaborative_distances from REMOTE_COLLABORATIVE_DISTANCES_URL, and save it to
-    # COLLABORATIVE_DISTANCES_PATH.
+    if Path(LOCAL_COLLABORATIVE_DISTANCES_DIR).exists():
+        # If COLLABORATIVE_DISTANCES_PATH exists, read csv.
+        collaborative_distances = pd.read_csv(LOCAL_COLLABORATIVE_DISTANCES_DIR, low_memory=False, encoding=ENCODING,
+                                              header=None)
+    else:
+        # Else, download collaborative_distances from REMOTE_COLLABORATIVE_DISTANCES_URL, and save it to
+        # COLLABORATIVE_DISTANCES_PATH.
+        collaborative_distances = download_csv(REMOTE_COLLABORATIVE_DISTANCES_URL, LOCAL_COLLABORATIVE_DISTANCES_DIR)
 
     # Turn it to a CHAMPION_SIZE * CHAMPION_SIZE ndarray.
+    collaborative_distances = collaborative_distances.as_matrix()
+    collaborative_distances[np.where(collaborative_distances == 0)] = 1e6
 
     # Return collaborative_distances
+    return collaborative_distances
 
 
 def get_competitive_distances():
@@ -38,15 +47,21 @@ def get_competitive_distances():
     :return competitive_distances: (ndarray[float])
     """
     # Check COMPETITIVE_DISTANCES_PATH.
-
-    # If COMPETITIVE_DISTANCES_PATH exists, read csv.
-
-    # Else, download competitive_distances from REMOTE_COMPETITIVE_DISTANCES_URL, and save it to
-    # COMPETITIVE_DISTANCES_PATH.
+    if Path(LOCAL_COMPETITIVE_DISTANCES_DIR).exists():
+        # If COMPETITIVE_DISTANCES_PATH exists, read csv.
+        competitive_distances = pd.read_csv(LOCAL_COMPETITIVE_DISTANCES_DIR, low_memory=False, encoding=ENCODING,
+                                            header=None)
+    else:
+        # Else, download competitive_distances from REMOTE_COMPETITIVE_DISTANCES_URL, and save it to
+        # COMPETITIVE_DISTANCES_PATH.
+        competitive_distances = download_csv(REMOTE_COMPETITIVE_DISTANCES_URL, LOCAL_COMPETITIVE_DISTANCES_DIR)
 
     # Turn it to a CHAMPION_SIZE * CHAMPION_SIZE ndarray.
+    competitive_distances = competitive_distances.as_matrix()
+    competitive_distances[np.where(competitive_distances == 0)] = 1e6
 
     # Return competitive_distances
+    return competitive_distances
 
 
 if __name__ == '__main__':
