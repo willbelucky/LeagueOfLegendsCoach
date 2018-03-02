@@ -3,131 +3,88 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 2. 28.
 """
-import pandas as pd
-from numpy import genfromtxt
 from pathlib import Path
-import numpy as np
-import matplotlib.pyplot as plt
-import networkx as nx
-from tqdm import tqdm
-from data.data_processor import OTHER_TEAM_LOSES_CSV,OTHER_TEAM_MATCHES_CSV,OTHER_TEAM_WINS_CSV,SAME_TEAM_LOSES_CSV,SAME_TEAM_MATCHES_CSV,SAME_TEAM_WINS_CSV
 
-from data.data_processor import get_same_team_matches, get_same_team_wins, get_same_team_loses
+import numpy as np
+import pandas as pd
+
+from data.data_processor import OTHER_TEAM_WINS_CSV, OTHER_TEAM_MATCHES_CSV, SAME_TEAM_WINS_CSV, \
+    SAME_TEAM_MATCHES_CSV, CHAMPION_SIZE
+from data.data_reader import ENCODING
 
 # Remote and local file paths
-COLLABORATIVE_DISTANCE_PATH = "stats/collaborative_distance.csv"
-COMPETITIVE_DISTANCE_PATH = "stats/competitive_distance.csv"
-
-# CSV encoding type
-ENCODING = 'utf-8'
-
-CHAMPION_SIZE = 690
+COLLABORATIVE_DISTANCE_PATH = "stats/collaborative_distances.csv"
+COMPETITIVE_DISTANCE_PATH = "stats/competitive_distances.csv"
 
 
-def calculate_collaborative_distance():
+def calculate_collaborative_distances():
     """
 
-    :return:
+    :return distances: (ndarray[float]) 690 * 690 matrix of collaborative distances.
     """
-    # Check /stats/distance.csv.
-
-    # If /stats/distance.csv is exists, return /stats/distance.csv as a 690 * 690 numpy.ndarray.
-
-    # If there is no /stats/distance.csv, do below codes.
-    # Get matrix of matches, wins ans loses.
-
-    # Calculate the distance between collaborative players.
-
-    # Save the result to /stats/distance.csv.
-
-    # Return /stats/distance.csv as a 680 * 680 numpy.ndarray.
+    # Check stats/collaborative_distance.csv.
     if Path(COLLABORATIVE_DISTANCE_PATH).exists():
-        distance = pd.read_csv(COLLABORATIVE_DISTANCE_PATH, low_memory=False, encoding=ENCODING)
+        # If stats/collaborative_distance.csv is exists,
+        # return stats/collaborative_distance.csv as a 690 * 690 numpy.ndarray.
+        distances = pd.read_csv(COLLABORATIVE_DISTANCE_PATH, low_memory=False, encoding=ENCODING)
     else:
-        same_team_matches = pd.read_csv(SAME_TEAM_MATCHES_CSV).as_matrix()
-        same_team_wins = pd.read_csv(SAME_TEAM_WINS_CSV).as_matrix()
+        # If there is no stats/collaborative_distance.csv, do below codes.
+        # Get matrix of matches and wins.
+        team_matches = pd.read_csv(SAME_TEAM_MATCHES_CSV).as_matrix()
+        team_wins = pd.read_csv(SAME_TEAM_WINS_CSV).as_matrix()
 
-        same_team_matches[np.where(same_team_matches <= 10)]=10000
+        # If there are few games, set the losing probability almost 100%,
+        # because there are some reasons they didn't choose that combination.
+        team_matches[np.where(team_matches <= 10)] = 10000
 
+        losing_probability = 1 - np.divide(team_wins, team_matches)
 
-        df=np.divide(same_team_wins, same_team_matches)
-        df[np.where(df <= 0.7)] = 0
-        df[np.where(df > 0.7)] = 1
+        # Calculate the distances between collaborative players.
+        distances = 4 * np.abs(losing_probability - 0.5) * (losing_probability - 0.5) + 1
+        distances = pd.DataFrame(np.array(distances).reshape(CHAMPION_SIZE, CHAMPION_SIZE))
 
+        # Save the result to stats/collaborative_distance.csv.
+        distances.to_csv(COLLABORATIVE_DISTANCE_PATH, header=False, index=False)
 
-        df2=[]
-        G=nx.from_numpy_matrix(df)
-        for i in range(CHAMPION_SIZE):
-            for j in range(CHAMPION_SIZE):
-                try:
-                    df2.append(nx.shortest_path_length(G, source=i, target=j))
-                except nx.NetworkXNoPath:
-                    df2.append(0)
-
-
-        df2=pd.DataFrame(np.array(df2).reshape(CHAMPION_SIZE,CHAMPION_SIZE))
-        distance = df2.to_csv(COLLABORATIVE_DISTANCE_PATH, header=False, index=False)
+    # Return stats/collaborative_distance.csv as a 690 * 690 numpy.ndarray.
+    distances = distances.as_matrix()
+    return distances
 
 
-
-    return distance
-
-def calculate_competitive_distance():
+def calculate_competitive_distances():
     """
 
-    :return:
+    :return distances: (ndarray[float]) 690 * 690 matrix of competitive distances.
     """
-    # Check /stats/distance.csv.
-
-    # If /stats/distance.csv is exists, return /stats/distance.csv as a 680 * 680 numpy.ndarray.
-
-    # If there is no /stats/distance.csv, do below codes.
-    # Get matrix of matches, wins ans loses.
-
-    # Calculate the distance between competitive players.
-
-    # Save the result to /stats/distance.csv.
-
-    # Return /stats/distance.csv as a 680 * 680 numpy.ndarray.
+    # Check stats/competitive_distance.csv.
     if Path(COMPETITIVE_DISTANCE_PATH).exists():
-        distance = pd.read_csv(COMPETITIVE_DISTANCE_PATH, low_memory=False, encoding=ENCODING)
+        # If stats/competitive_distance.csv is exists,
+        # return stats/competitive_distance.csv as a 690 * 690 numpy.ndarray.
+        distances = pd.read_csv(COMPETITIVE_DISTANCE_PATH, low_memory=False, encoding=ENCODING)
     else:
-        other_team_matches = pd.read_csv(OTHER_TEAM_MATCHES_CSV).as_matrix()
-        other_team_wins = pd.read_csv(OTHER_TEAM_WINS_CSV).as_matrix()
+        # If there is no stats/competitive_distance.csv, do below codes.
+        # Get matrix of matches and wins.
+        team_matches = pd.read_csv(OTHER_TEAM_MATCHES_CSV).as_matrix()
+        team_wins = pd.read_csv(OTHER_TEAM_WINS_CSV).as_matrix()
 
-        other_team_matches[np.where(other_team_matches <= 10)]=10000
+        # If there are few games, set the losing probability almost 100%,
+        # because there are some reasons they didn't choose that combination.
+        team_matches[np.where(team_matches <= 10)] = 10000
 
+        losing_probability = 1 - np.divide(team_wins, team_matches)
 
-        df=np.divide(other_team_wins,other_team_matches)
-        df[np.where(df <= 0.7)] = 0
-        df[np.where(df > 0.7)] = 1
+        # Calculate the distances between competitive players.
+        distances = 4 * np.abs(losing_probability - 0.5) * (losing_probability - 0.5) + 1
+        distances = pd.DataFrame(np.array(distances).reshape(CHAMPION_SIZE, CHAMPION_SIZE))
 
-        G = nx.from_numpy_matrix(df)
-        print(nx.shortest_path_length(G, source=1, target=3))
-        print(nx.shortest_path_length(G, source=5, target=14))
+        # Save the result to stats/competitive_distance.csv.
+        distances.to_csv(COMPETITIVE_DISTANCE_PATH, header=False, index=False)
 
-
-        """
-        df2 = []
-        G = nx.from_numpy_matrix(df)
-        for i in range(CHAMPION_SIZE):
-            for j in range(CHAMPION_SIZE):
-                try:
-                    df2.append(nx.shortest_path_length(G, source=i, target=j))
-                except nx.NetworkXNoPath:
-                    df2.append(0)
-
-        
-        df2 = pd.DataFrame(np.array(df2).reshape(CHAMPION_SIZE, CHAMPION_SIZE))
-        
-        distance = df2.to_csv(COMPETITIVE_DISTANCE_PATH, header=False, index=False)
-        """
-    return 0
-
-
-
+    # Return stats/competitive_distance.csv as a 690 * 690 numpy.ndarray.
+    distances = distances.as_matrix()
+    return distances
 
 
 if __name__ == '__main__':
-    #calculate_collaborative_distance()
-    calculate_competitive_distance()
+    print(calculate_collaborative_distances())
+    print(calculate_competitive_distances())

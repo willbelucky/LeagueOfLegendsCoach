@@ -11,8 +11,8 @@ import pandas as pd
 from data.data_reader import download_csv, ENCODING
 
 # TODO: Not yet calculated. Updated soon.
-REMOTE_COLLABORATIVE_DISTANCES_URL = 'https://www.dropbox.com/s/x8m2mn3rszxu94p/collaborative_distances.csv?dl=1'
-REMOTE_COMPETITIVE_DISTANCES_URL = 'https://www.dropbox.com/s/rxrvsw164xuayru/competitive_distances.csv?dl=1'
+REMOTE_COLLABORATIVE_DISTANCES_URL = 'https://www.dropbox.com/s/wnojcqmpdojcanq/collaborative_distances.csv?dl=1'
+REMOTE_COMPETITIVE_DISTANCES_URL = 'https://www.dropbox.com/s/af6xtcti5dxy0la/competitive_distances.csv?dl=1'
 
 LOCAL_COLLABORATIVE_DISTANCES_DIR = 'stats/collaborative_distances.csv'
 LOCAL_COMPETITIVE_DISTANCES_DIR = 'stats/competitive_distances.csv'
@@ -21,7 +21,7 @@ LOCAL_COMPETITIVE_DISTANCES_DIR = 'stats/competitive_distances.csv'
 def get_collaborative_distances():
     """
 
-    :return collaborative_distances: (ndarray[float])
+    :return collaborative_distances: (ndarray[float]) 690 * 690 matrix of collaborative distances.
     """
     # Check COLLABORATIVE_DISTANCES_PATH.
     if Path(LOCAL_COLLABORATIVE_DISTANCES_DIR).exists():
@@ -35,7 +35,6 @@ def get_collaborative_distances():
 
     # Turn it to a CHAMPION_SIZE * CHAMPION_SIZE ndarray.
     collaborative_distances = collaborative_distances.as_matrix()
-    collaborative_distances[np.where(collaborative_distances == 0)] = 1e6
 
     # Return collaborative_distances
     return collaborative_distances
@@ -44,7 +43,7 @@ def get_collaborative_distances():
 def get_competitive_distances():
     """
 
-    :return competitive_distances: (ndarray[float])
+    :return competitive_distances: 690 * 690 matrix of competitive distances.
     """
     # Check COMPETITIVE_DISTANCES_PATH.
     if Path(LOCAL_COMPETITIVE_DISTANCES_DIR).exists():
@@ -58,7 +57,6 @@ def get_competitive_distances():
 
     # Turn it to a CHAMPION_SIZE * CHAMPION_SIZE ndarray.
     competitive_distances = competitive_distances.as_matrix()
-    competitive_distances[np.where(competitive_distances == 0)] = 1e6
 
     # Return competitive_distances
     return competitive_distances
