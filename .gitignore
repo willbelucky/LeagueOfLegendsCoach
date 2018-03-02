@@ -4,9 +4,14 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/workspace.xml
+data/__pycache__/
 
 # Data source files
 *.csv
 
+# Model persistence files
+*.pkl
+
 # Virtual environment files
 venv
+stats/__pycache__/
