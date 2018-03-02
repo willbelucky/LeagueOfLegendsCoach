@@ -36,29 +36,30 @@ def get_same_team_matches():
     df = get_participants()
     df2 = get_champs()
 
-    same_team_matches = np.zeros(CHAMPION_SIZE * CHAMPION_SIZE)
+    arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
         for j in range(min(i + 1, len(df)), min(i + 6, len(df)), 1):
-            if df[MATCH_ID][i] == df[MATCH_ID][j] and df[TEAM][i] == df[TEAM][j]:
-                A = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][i]].values
-                B = df2.index[df2[ROLE] == df[ROLE][i]].values
+            if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] == df['team'][j]):
+                A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
+                B = df2.index[df2['role'] == df['role'][i]].values
                 A = np.ndarray.tolist(A)
                 B = np.ndarray.tolist(B)
                 idxrow = set(A).intersection(B)
                 idxrow = list(idxrow)[0]
 
-                C = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][j]].values
-                D = df2.index[df2[ROLE] == df[ROLE][j]].values
+                C = df2.index[df2['champion_id'] == df['champion_id'][j]].values
+                D = df2.index[df2['role'] == df['role'][j]].values
                 C = np.ndarray.tolist(C)
                 D = np.ndarray.tolist(D)
                 idxcol = set(C).intersection(D)
                 idxcol = list(idxcol)[0]
+                print(i)
 
-                same_team_matches[idxrow * CHAMPION_SIZE + idxcol] += 1
-                same_team_matches[idxcol * CHAMPION_SIZE + idxrow] += 1
+                arraymatrix[idxrow * 690 + idxcol] += 1
+                arraymatrix[idxcol * 690 + idxrow] += 1
 
-    same_team_matches = np.reshape(same_team_matches, (CHAMPION_SIZE, CHAMPION_SIZE))
-    return same_team_matches
+    arraymatrix = np.reshape(arraymatrix, (690, 690))
+    return arraymatrix
 
 
 def get_same_team_wins():
@@ -71,31 +72,31 @@ def get_same_team_wins():
     df = get_participants()
     df2 = get_champs()
 
-    same_team_wins = np.zeros(CHAMPION_SIZE * CHAMPION_SIZE)
+    arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
-        if df[WIN][i] is True:
+        if (df['win'][i] == True):
             for j in range(min(i + 1, len(df)), min(i + 6, len(df)), 1):
-                if df[MATCH_ID][i] == df[MATCH_ID][j] and df[TEAM][i] == df[TEAM][j] and (df[WIN][j] is True):
-                    A = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][i]].values
-                    B = df2.index[df2[ROLE] == df[ROLE][i]].values
+                if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] == df['team'][j] and (df['win'][j] == True)):
+                    A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
+                    B = df2.index[df2['role'] == df['role'][i]].values
                     A = np.ndarray.tolist(A)
                     B = np.ndarray.tolist(B)
                     idxrow = set(A).intersection(B)
                     idxrow = list(idxrow)[0]
 
-                    C = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][j]].values
-                    D = df2.index[df2[ROLE] == df[ROLE][j]].values
+                    C = df2.index[df2['champion_id'] == df['champion_id'][j]].values
+                    D = df2.index[df2['role'] == df['role'][j]].values
                     C = np.ndarray.tolist(C)
                     D = np.ndarray.tolist(D)
                     idxcol = set(C).intersection(D)
                     idxcol = list(idxcol)[0]
 
-                    same_team_wins[idxrow * CHAMPION_SIZE + idxcol] += 1
-                    same_team_wins[idxcol * CHAMPION_SIZE + idxrow] += 1
+                    arraymatrix[idxrow * 690 + idxcol] += 1
+                    arraymatrix[idxcol * 690 + idxrow] += 1
         else:
             continue
-    same_team_wins = np.reshape(same_team_wins, (CHAMPION_SIZE, CHAMPION_SIZE))
-    return same_team_wins
+    arraymatrix = np.reshape(arraymatrix, (690, 690))
+    return arraymatrix
 
 
 def get_same_team_loses():
@@ -107,31 +108,32 @@ def get_same_team_loses():
     df = get_participants()
     df2 = get_champs()
 
-    same_team_loses = np.zeros(CHAMPION_SIZE * CHAMPION_SIZE)
+    arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
-        if df[WIN][i] is False:
+        if (df['win'][i] == False):
+            print(i)
             for j in range(min(i + 1, len(df)), min(i + 6, len(df)), 1):
-                if df[MATCH_ID][i] is df[MATCH_ID][j] and df[TEAM][i] == df[TEAM][j] and (df[WIN][j] is False):
-                    A = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][i]].values
-                    B = df2.index[df2[ROLE] == df[ROLE][i]].values
+                if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] == df['team'][j] and (df['win'][j] == False)):
+                    A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
+                    B = df2.index[df2['role'] == df['role'][i]].values
                     A = np.ndarray.tolist(A)
                     B = np.ndarray.tolist(B)
                     idxrow = set(A).intersection(B)
                     idxrow = list(idxrow)[0]
 
-                    C = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][j]].values
-                    D = df2.index[df2[ROLE] == df[ROLE][j]].values
+                    C = df2.index[df2['champion_id'] == df['champion_id'][j]].values
+                    D = df2.index[df2['role'] == df['role'][j]].values
                     C = np.ndarray.tolist(C)
                     D = np.ndarray.tolist(D)
                     idxcol = set(C).intersection(D)
                     idxcol = list(idxcol)[0]
 
-                    same_team_loses[idxrow * CHAMPION_SIZE + idxcol] += 1
-                    same_team_loses[idxcol * CHAMPION_SIZE + idxrow] += 1
+                    arraymatrix[idxrow * 690 + idxcol] += 1
+                    arraymatrix[idxcol * 690 + idxrow] += 1
         else:
             continue
-    same_team_loses = np.reshape(same_team_loses, (CHAMPION_SIZE, CHAMPION_SIZE))
-    return same_team_loses
+    arraymatrix = np.reshape(arraymatrix, (690, 690))
+    return arraymatrix
 
 
 def get_other_team_matches():
@@ -143,29 +145,29 @@ def get_other_team_matches():
     df = get_participants()
     df2 = get_champs()
 
-    other_team_matches = np.zeros(CHAMPION_SIZE * CHAMPION_SIZE)
+    arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
         for j in range(min(i + 1, len(df)), min(i + 11, len(df)), 1):
-            if df[MATCH_ID][i] is df[MATCH_ID][j] and df[TEAM][i] != df[TEAM][j]:
-                A = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][i]].values
-                B = df2.index[df2[ROLE] == df[ROLE][i]].values
+            if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] != df['team'][j]):
+                A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
+                B = df2.index[df2['role'] == df['role'][i]].values
                 A = np.ndarray.tolist(A)
                 B = np.ndarray.tolist(B)
                 idxrow = set(A).intersection(B)
                 idxrow = list(idxrow)[0]
 
-                C = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][j]].values
-                D = df2.index[df2[ROLE] == df[ROLE][j]].values
+                C = df2.index[df2['champion_id'] == df['champion_id'][j]].values
+                D = df2.index[df2['role'] == df['role'][j]].values
                 C = np.ndarray.tolist(C)
                 D = np.ndarray.tolist(D)
                 idxcol = set(C).intersection(D)
                 idxcol = list(idxcol)[0]
 
-                other_team_matches[idxrow * CHAMPION_SIZE + idxcol] += 1
-                other_team_matches[idxcol * CHAMPION_SIZE + idxrow] += 1
+                arraymatrix[idxrow * 690 + idxcol] += 1
+                arraymatrix[idxcol * 690 + idxrow] += 1
 
-    other_team_matches = np.reshape(other_team_matches, (CHAMPION_SIZE, CHAMPION_SIZE))
-    return other_team_matches
+    arraymatrix = np.reshape(arraymatrix, (690, 690))
+    return arraymatrix
 
 
 def get_other_team_wins():
@@ -178,31 +180,31 @@ def get_other_team_wins():
     df = get_participants()
     df2 = get_champs()
 
-    other_team_wins = np.zeros(CHAMPION_SIZE * CHAMPION_SIZE)
+    arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
-        if df[WIN][i] is True:
+        if (df['win'][i] == True):
             for j in range(min(max(i - 11, 0), len(df)), min(i + 11, len(df)), 1):
-                if df[MATCH_ID][i] == df[MATCH_ID][j] and df[TEAM][i] != df[TEAM][j] and (df[WIN][j] is False):
-                    A = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][i]].values
-                    B = df2.index[df2[ROLE] == df[ROLE][i]].values
+                if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] != df['team'][j] and (df['win'][j] == False)):
+                    A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
+                    B = df2.index[df2['role'] == df['role'][i]].values
                     A = np.ndarray.tolist(A)
                     B = np.ndarray.tolist(B)
                     idxrow = set(A).intersection(B)
                     idxrow = list(idxrow)[0]
 
-                    C = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][j]].values
-                    D = df2.index[df2[ROLE] == df[ROLE][j]].values
+                    C = df2.index[df2['champion_id'] == df['champion_id'][j]].values
+                    D = df2.index[df2['role'] == df['role'][j]].values
                     C = np.ndarray.tolist(C)
                     D = np.ndarray.tolist(D)
                     idxcol = set(C).intersection(D)
                     idxcol = list(idxcol)[0]
 
-                    other_team_wins[idxrow * CHAMPION_SIZE + idxcol] += 1
+                    arraymatrix[idxrow * 690 + idxcol] += 1
 
         else:
             continue
-    other_team_wins = np.reshape(other_team_wins, (CHAMPION_SIZE, CHAMPION_SIZE))
-    return other_team_wins
+    arraymatrix = np.reshape(arraymatrix, (690, 690))
+    return arraymatrix
 
 
 def get_other_team_loses():
@@ -215,30 +217,30 @@ def get_other_team_loses():
     df = get_participants()
     df2 = get_champs()
 
-    other_team_loses = np.zeros(CHAMPION_SIZE * CHAMPION_SIZE)
+    arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
-        if df[WIN][i] is False:
+        if (df['win'][i] == False):
             for j in range(min(max(i - 11, 0), len(df)), min(i + 11, len(df)), 1):
-                if df[MATCH_ID][i] == df[MATCH_ID][j] and df[TEAM][i] != df[TEAM][j] and df[WIN][j] is True:
-                    A = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][i]].values
-                    B = df2.index[df2[ROLE] == df[ROLE][i]].values
+                if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] != df['team'][j] and (df['win'][j] == True)):
+                    A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
+                    B = df2.index[df2['role'] == df['role'][i]].values
                     A = np.ndarray.tolist(A)
                     B = np.ndarray.tolist(B)
                     idxrow = set(A).intersection(B)
                     idxrow = list(idxrow)[0]
 
-                    C = df2.index[df2[CHAMPION_ID] == df[CHAMPION_ID][j]].values
-                    D = df2.index[df2[ROLE] == df[ROLE][j]].values
+                    C = df2.index[df2['champion_id'] == df['champion_id'][j]].values
+                    D = df2.index[df2['role'] == df['role'][j]].values
                     C = np.ndarray.tolist(C)
                     D = np.ndarray.tolist(D)
                     idxcol = set(C).intersection(D)
                     idxcol = list(idxcol)[0]
 
-                    other_team_loses[idxrow * CHAMPION_SIZE + idxcol] += 1
+                    arraymatrix[idxrow * 690 + idxcol] += 1
         else:
             continue
-    other_team_loses = np.reshape(other_team_loses, (CHAMPION_SIZE, CHAMPION_SIZE))
-    return other_team_loses
+    arraymatrix = np.reshape(arraymatrix, (690, 690))
+    return arraymatrix
 
 
 if __name__ == '__main__':
