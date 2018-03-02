@@ -6,40 +6,43 @@
 import pandas as pd
 import numpy as np
 
+COLLABORATIVE_DISTANCES_PATH = '/stats/distances.csv'
+COMPETITIVE_DISTANCES_PATH = '/stats/distances.csv'
 
-def calculate_collaborative_distance():
+
+def calculate_collaborative_distances():
     """
 
-    :return:
+    :return collaborative_distance: (ndarray[float]) The distances between two collaborative champions
     """
-    # Check /stats/distance.csv.
+    # Check /stats/distances.csv.
 
-    # If /stats/distance.csv is exists, return /stats/distance.csv as a 680 * 680 numpy.ndarray.
+    # If /stats/distances.csv is exists, return /stats/distances.csv as a 680 * 680 numpy.ndarray.
 
     # If there is no /stats/distance.csv, do below codes.
     # Get matrix of matches, wins ans loses.
 
     # Calculate the distance between collaborative players.
 
-    # Save the result to /stats/distance.csv.
+    # Save the result to /stats/distances.csv.
 
-    # Return /stats/distance.csv as a 680 * 680 numpy.ndarray.
+    # Return /stats/distances.csv as a 680 * 680 numpy.ndarray.
 
 
-def calculate_competitive_distance():
+def calculate_competitive_distances():
     """
 
-    :return:
+    :return competitive_distances: (ndarray[float]) The distances between two competitive champions
     """
-    # Check /stats/distance.csv.
+    # Check /stats/distances.csv.
 
-    # If /stats/distance.csv is exists, return /stats/distance.csv as a 680 * 680 numpy.ndarray.
+    # If /stats/distances.csv is exists, return /stats/distances.csv as a 680 * 680 numpy.ndarray.
 
-    # If there is no /stats/distance.csv, do below codes.
+    # If there is no /stats/distances.csv, do below codes.
     # Get matrix of matches, wins ans loses.
 
     # Calculate the distance between competitive players.
 
-    # Save the result to /stats/distance.csv.
+    # Save the result to /stats/distances.csv.
 
-    # Return /stats/distance.csv as a 680 * 680 numpy.ndarray.
+    # Return /stats/distances.csv as a 680 * 680 numpy.ndarray.
