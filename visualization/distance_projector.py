@@ -3,15 +3,11 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 2. 28.
 """
-import pandas as pd
-import numpy as np
+import os
+
 from matplotlib import pyplot as plt
-from matplotlib.collections import LineCollection
-import networkx as nx
-import string
 from sklearn import manifold
 from sklearn.decomposition import PCA
-import os
 
 from stats.distance_calculator import calculate_collaborative_distances
 
