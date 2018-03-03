@@ -3,19 +3,20 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 2. 28.
 """
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from tqdm import tqdm
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from scikitplot.metrics import plot_confusion_matrix
+from scipy import stats
+from sklearn.externals import joblib
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix as cm
 from sklearn.metrics import roc_curve, auc
-from sklearn.externals import joblib
+from sklearn.model_selection import train_test_split
+from tqdm import tqdm
 
 from data.data_reader import get_champs, get_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID
-from stats.distance_reader import get_collaborative_distances, get_competitive_distances
+from stats.distance_calculator import calculate_collaborative_distances, calculate_competitive_distances
 
 MODEL_PATH = 'stats/logistic_regression.pkl'
 
@@ -50,8 +51,8 @@ def _get_data_set(test_size=0.2):
     Xs = np.zeros((match_number, 45))
 
     # Get distances from get_collaborative_distances and get_competitive_distances
-    collaborative_distances = get_collaborative_distances()
-    competitive_distances = get_competitive_distances()
+    collaborative_distances = calculate_collaborative_distances()
+    competitive_distances = calculate_competitive_distances()
 
     for champion_index, X in tqdm(zip(champion_indexes, Xs)):
         # X_0 ~ X_9: Collaborative distances between blue team members.
@@ -73,6 +74,8 @@ def _get_data_set(test_size=0.2):
                 X[x_index] = competitive_distances[champion_index[i]][champion_index[j]]
                 x_index += 1
 
+    # Add intercept term to X.
+    Xs = np.concatenate((np.array([[1.0]] * Xs.shape[0]), Xs), axis=1)
     train_Xs, test_Xs, train_Ys, test_Ys = train_test_split(Xs, Ys)
 
     return train_Xs, test_Xs, train_Ys, test_Ys
@@ -106,7 +109,7 @@ def plot_roc_curve(fpr, tpr, AUC, title=None, label=None, color='darkorange'):
 
 
 # noinspection PyPep8Naming
-def evaluate_predictions(y_actual: pd.Series, y_prediction: pd.Series,
+def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
                          title=None, confusion_matrix_plotting=False, roc_curve_plotting=False):
     """
 
@@ -122,8 +125,9 @@ def evaluate_predictions(y_actual: pd.Series, y_prediction: pd.Series,
     :return AUC: (float) The AUC(Area Under the Curve) of the ROC(Receiver Operating Characteristic) curve.
     """
     assert len(y_actual) == len(y_prediction)
+    y_prediction = np.where(y_prediction > 0.5, 1.0, 0.0)
 
-    confusion_matrix = cm(y_actual, y_prediction)
+    confusion_matrix = cm(y_actual.astype(bool), y_prediction.astype(bool))
     TN, FP, FN, TP = confusion_matrix.ravel()
     Precision = TP / (TP + FP + 1e-20)  # The portion of actual 1 of prediction 1.
     Recall = TP / (TP + FN + 1e-20)  # The portion of prediction 1 of actual 1.
@@ -150,9 +154,9 @@ def evaluate_predictions(y_actual: pd.Series, y_prediction: pd.Series,
 def build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys):
     """
     :param train_Xs: (ndarray[float]) An array of collaborative distances and competitive distances,
-        size of 45 * (N * (1 - test_size)).
+        size of 46 * (N * (1 - test_size)).
     :param test_Xs: (ndarray[float]) An array of collaborative distances and competitive distances,
-        size of 45 * (N * test_size).
+        size of 46 * (N * test_size).
     :param train_Ys: (ndarray[float]) A series whether win or not. 1.0: win, 0.0: lose,
         size of (N * (1 - test_size)).
     :param test_Ys: (ndarray[float]) A series whether win or not. 1.0: win, 0.0: lose,
@@ -160,15 +164,13 @@ def build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys):
 
     :return betas: (ndarray[float]) Betas of logistic linear regression.
     """
-    logistic = LogisticRegression()
+    logistic = LogisticRegression(fit_intercept=False, max_iter=1e5, tol=1e-5)
     logistic.fit(train_Xs, train_Ys)
     predicted_Ys = logistic.predict(test_Xs)
 
     accuracy, f1_score, AUC = evaluate_predictions(test_Ys, predicted_Ys, 'Blue team win probability(%)', True, True)
 
-    print(accuracy, f1_score, AUC)
-
-    return logistic
+    return logistic, accuracy, f1_score, AUC
 
 
 def save_model(model):
@@ -188,8 +190,19 @@ def load_model():
     return model
 
 
+def calculate_p_value(model, train_Xs, train_Ys):
+    sse = np.sum((model.predict(train_Xs) - train_Ys) ** 2, axis=0) / float(train_Xs.shape[0] - train_Xs.shape[1])
+    se = np.sqrt(np.diagonal(sse * np.linalg.inv(np.dot(train_Xs.T, train_Xs))))
+    t = model.coef_ / se
+    p = 2 * (1 - stats.t.cdf(np.abs(t), train_Ys.shape[0] - train_Xs.shape[1]))
+
+    return p
+
+
 if __name__ == '__main__':
     train_Xs, test_Xs, train_Ys, test_Ys = _get_data_set()
-    model = build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys)
+    model, accuracy, f1_score, AUC = build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys)
     save_model(model)
-    print(model.intercept_, model.coef_)
+    p = calculate_p_value(model, train_Xs, train_Ys)
+    result = pd.DataFrame(data={'coefficient': model.coef_[0], 'p-value': p[0]})
+    result.to_csv('stats/result_{}_{}_{}.csv'.format(accuracy, f1_score, AUC))
