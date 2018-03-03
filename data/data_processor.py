@@ -9,12 +9,12 @@ import pandas as pd
 from data.data_reader import get_champs, get_participants
 
 # Result file paths
-OTHER_TEAM_LOSES_CSV = "/data/other_team_loses.csv"
-OTHER_TEAM_WINS_CSV = "/data/other_team_wins.csv"
-OTHER_TEAM_MATCHES_CSV = "/data/other_team_matches.csv"
-SAME_TEAM_LOSES_CSV = "/data/same_team_loses.csv"
-SAME_TEAM_WINS_CSV = "/data/same_team_wins.csv"
-SAME_TEAM_MATCHES_CSV = "/data/same_team_matches.csv"
+OTHER_TEAM_LOSES_CSV = "data/other_team_loses.csv"
+OTHER_TEAM_WINS_CSV = "data/other_team_wins.csv"
+OTHER_TEAM_MATCHES_CSV = "data/other_team_matches.csv"
+SAME_TEAM_LOSES_CSV = "data/same_team_loses.csv"
+SAME_TEAM_WINS_CSV = "data/same_team_wins.csv"
+SAME_TEAM_MATCHES_CSV = "data/same_team_matches.csv"
 
 # Columns name
 ROLE = 'role'
@@ -271,3 +271,4 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
     print('Finally done!')
+
