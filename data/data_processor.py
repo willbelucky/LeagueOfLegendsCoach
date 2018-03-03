@@ -53,7 +53,6 @@ def get_same_team_matches():
                 D = np.ndarray.tolist(D)
                 idxcol = set(C).intersection(D)
                 idxcol = list(idxcol)[0]
-                print(i)
 
                 arraymatrix[idxrow * 690 + idxcol] += 1
                 arraymatrix[idxcol * 690 + idxrow] += 1
@@ -111,7 +110,6 @@ def get_same_team_loses():
     arraymatrix = np.zeros(690 * 690)
     for i in range(len(df)):
         if (df['win'][i] == False):
-            print(i)
             for j in range(min(i + 1, len(df)), min(i + 6, len(df)), 1):
                 if (df[MATCH_ID][i] == df[MATCH_ID][j] and df['team'][i] == df['team'][j] and (df['win'][j] == False)):
                     A = df2.index[df2['champion_id'] == df['champion_id'][i]].values
