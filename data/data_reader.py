@@ -16,6 +16,7 @@ REMOTE_STATS1_URL = "https://www.dropbox.com/s/fozr2zbglqxdg45/stats1.csv?dl=1"
 LOCAL_STATS1_DIR = "data/stats1.csv"
 REMOTE_STATS2_URL = "https://www.dropbox.com/s/2moeacflbn59qba/stats2.csv?dl=1"
 LOCAL_STATS2_DIR = "data/stats2.csv"
+LOCAL_PURE_PARTICIPANTS_URL = "data/pure_participants.csv"
 
 # CSV encoding type
 ENCODING = 'utf-8'
@@ -166,6 +167,34 @@ def get_participants():
     return participants
 
 
+def get_pure_participants():
+    """
+    1. The number of players of a match should be 0.
+    2. Both team should have all 5 role, Top solo, Jungle, Mid solo, Bottom carry, Bottom support.
+
+    :return pure_participants: (DataFrame)
+        columns participant_id  | (int) The id of participants
+                match_id        | (int) The id of matches
+                team            | (bool) True: Blue, False: Red
+                champion_id     | (int) The id of champions
+                role            | (int) 0: Top, 1: Jungle, 2: Mid, 3: Carry, 4: Support
+                win             | (bool) True: win, False: lose
+    """
+    # check local csv file exists or not.
+    if Path(LOCAL_PURE_PARTICIPANTS_URL).exists():
+        # if it exists, load csv file.
+        champs = pd.read_csv(LOCAL_PURE_PARTICIPANTS_URL, low_memory=False, encoding=ENCODING)
+    else:
+        # else, purify participants and return them after saving.
+        participants = get_participants()
+
+        # TODO
+        pure_participants = None
+        pure_participants.to_csv(LOCAL_PURE_PARTICIPANTS_URL, index=False, encoding=ENCODING)
+
+    return pure_participants
+
+
 if __name__ == '__main__':
-    print(get_participants())
+    print(get_pure_participants())
     print(get_champs())
