@@ -16,6 +16,9 @@ REMOTE_STATS1_URL = "https://www.dropbox.com/s/fozr2zbglqxdg45/stats1.csv?dl=1"
 LOCAL_STATS1_DIR = "data/stats1.csv"
 REMOTE_STATS2_URL = "https://www.dropbox.com/s/2moeacflbn59qba/stats2.csv?dl=1"
 LOCAL_STATS2_DIR = "data/stats2.csv"
+REMOTE_BANS_URL = "https://www.dropbox.com/s/bcg30zlx7fbnzye/teambans.csv?dl=1"
+LOCAL_BANS_DIR = "data/teambans.csv"
+LOCAL_PURE_PARTICIPANTS_URL = "data/pure_participants.csv"
 
 # CSV encoding type
 ENCODING = 'utf-8'
@@ -166,6 +169,86 @@ def get_participants():
     return participants
 
 
+def get_bans():
+    """
+
+    :return stats: (DataFrame)
+        columns       match_id        | (int) The id of matches
+                      banned_id       | (array of int) The array of ids of banned champions in each match
+
+    """
+    pass
+    # check local csv file exists or not.
+    if Path(LOCAL_BANS_DIR).exists():
+        # if it exists, load csv file.
+        bans = pd.read_csv(LOCAL_BANS_DIR, low_memory=False, encoding=ENCODING)
+    else:
+        # else, download csv file from remote repository and save it to local folder.
+        bans = download_csv(REMOTE_BANS_URL, LOCAL_BANS_DIR)
+
+    bans = bans.rename(columns={"matchid": MATCH_ID, "championid": CHAMPION_ID})
+    bans = bans[[MATCH_ID, CHAMPION_ID]]
+
+    return bans
+
+
+def get_pure_participants():
+    """
+    1. The number of players of a match should be 0.
+    2. Both team should have all 5 role, Top solo, Jungle, Mid solo, Bottom carry, Bottom support.
+
+    :return pure_participants: (DataFrame)
+        columns participant_id  | (int) The id of participants
+                match_id        | (int) The id of matches
+                team            | (bool) True: Blue, False: Red
+                champion_id     | (int) The id of champions
+                role            | (int) 0: Top, 1: Jungle, 2: Mid, 3: Carry, 4: Support
+                win             | (bool) True: win, False: lose
+    """
+    # check local csv file exists or not.
+    if Path(LOCAL_PURE_PARTICIPANTS_URL).exists():
+        # if it exists, load csv file.
+        pure_participants = pd.read_csv(LOCAL_PURE_PARTICIPANTS_URL, low_memory=False, encoding=ENCODING)
+    else:
+        # else, purify participants and return them after saving.
+        participants = get_participants()
+
+        df = participants
+        df['sum'] = 1
+        df['role_sum'] = 1
+        for i in range(len(df)):
+            if (df['role'][i] == 0):
+                df.at[i, 'role_sum'] = 1
+            elif (df['role'][i] == 1):
+                df.at[i, 'role_sum'] = 10
+            elif (df['role'][i] == 2):
+                df.at[i, 'role_sum'] = 100
+            elif (df['role'][i] == 3):
+                df.at[i, 'role_sum'] = 1000
+            elif (df['role'][i] == 4):
+                df.at[i, 'role_sum'] = 10000
+            else:
+                df.at[i, 'role_sum'] = 10000000
+
+        df2 = df.groupby('match_id').sum()
+
+        FIND_TEAMMATES_10 = df2.iloc[np.where(df2['sum'] == 10)]
+        FIND_ROLE_20 = FIND_TEAMMATES_10.iloc[np.where(FIND_TEAMMATES_10['role_sum'] == 22222)]
+        FIND_ROLE_20 = FIND_ROLE_20.index
+        array_FIND_TEAMMATES_10 = np.array(FIND_ROLE_20)
+
+        df3 = pd.DataFrame()
+        df3['match_id'] = array_FIND_TEAMMATES_10
+
+        participants = participants.merge(df3, on='match_id')
+
+        pure_participants = participants
+        pure_participants.to_csv(LOCAL_PURE_PARTICIPANTS_URL, index=False, encoding=ENCODING)
+
+    return pure_participants
+
+
 if __name__ == '__main__':
-    print(get_participants())
+    print(get_bans())
+    print(get_pure_participants())
     print(get_champs())
