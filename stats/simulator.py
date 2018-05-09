@@ -15,13 +15,13 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-from data.data_reader import get_champs, get_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID
+from data.data_reader import get_champs, get_pure_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID
 from stats.distance_calculator import calculate_collaborative_distances, calculate_competitive_distances
 
 MODEL_PATH = 'stats/logistic_regression.pkl'
 
 
-def _get_data_set(test_size=0.2):
+def get_data_set(test_size=0.2):
     """
     :param test_size: (float) The size of test. test_size should be bigger than 0, and smaller than 1.
 
@@ -33,7 +33,7 @@ def _get_data_set(test_size=0.2):
     assert 0 < test_size < 1
 
     # Get Ys from participants.
-    participants = get_participants()
+    participants = get_pure_participants()
     wins = participants[WIN]
     Ys = wins.loc[[i for j, i in enumerate(wins.index) if j % 10 == 0]].astype(float).values
 
@@ -76,7 +76,7 @@ def _get_data_set(test_size=0.2):
 
     # Add intercept term to X.
     Xs = np.concatenate((np.array([[1.0]] * Xs.shape[0]), Xs), axis=1)
-    train_Xs, test_Xs, train_Ys, test_Ys = train_test_split(Xs, Ys)
+    train_Xs, test_Xs, train_Ys, test_Ys = train_test_split(Xs, Ys, test_size=test_size)
 
     return train_Xs, test_Xs, train_Ys, test_Ys
 
@@ -200,7 +200,7 @@ def calculate_p_value(model, train_Xs, train_Ys):
 
 
 if __name__ == '__main__':
-    train_Xs, test_Xs, train_Ys, test_Ys = _get_data_set()
+    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set()
     model, accuracy, f1_score, AUC = build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys)
     save_model(model)
     p = calculate_p_value(model, train_Xs, train_Ys)
