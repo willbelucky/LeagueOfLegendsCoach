@@ -16,6 +16,8 @@ REMOTE_STATS1_URL = "https://www.dropbox.com/s/fozr2zbglqxdg45/stats1.csv?dl=1"
 LOCAL_STATS1_DIR = "data/stats1.csv"
 REMOTE_STATS2_URL = "https://www.dropbox.com/s/2moeacflbn59qba/stats2.csv?dl=1"
 LOCAL_STATS2_DIR = "data/stats2.csv"
+REMOTE_BANS_URL = "https://www.dropbox.com/s/bcg30zlx7fbnzye/teambans.csv?dl=1"
+LOCAL_BANS_DIR = "data/teambans.csv"
 LOCAL_PURE_PARTICIPANTS_URL = "data/pure_participants.csv"
 
 # CSV encoding type
@@ -167,6 +169,29 @@ def get_participants():
     return participants
 
 
+def get_bans():
+    """
+
+    :return stats: (DataFrame)
+        columns       match_id        | (int) The id of matches
+                      banned_id       | (array of int) The array of ids of banned champions in each match
+
+    """
+    pass
+    # check local csv file exists or not.
+    if Path(LOCAL_BANS_DIR).exists():
+        # if it exists, load csv file.
+        bans = pd.read_csv(LOCAL_BANS_DIR, low_memory=False, encoding=ENCODING)
+    else:
+        # else, download csv file from remote repository and save it to local folder.
+        bans = download_csv(REMOTE_BANS_URL, LOCAL_BANS_DIR)
+
+    bans = bans.rename(columns={"matchid": MATCH_ID, "championid": CHAMPION_ID})
+    bans = bans[[MATCH_ID, CHAMPION_ID]]
+
+    return bans
+
+
 def get_pure_participants():
     """
     1. The number of players of a match should be 0.
@@ -183,20 +208,17 @@ def get_pure_participants():
     # check local csv file exists or not.
     if Path(LOCAL_PURE_PARTICIPANTS_URL).exists():
         # if it exists, load csv file.
-        champs = pd.read_csv(LOCAL_PURE_PARTICIPANTS_URL, low_memory=False, encoding=ENCODING)
+        pure_participants = pd.read_csv(LOCAL_PURE_PARTICIPANTS_URL, low_memory=False, encoding=ENCODING)
     else:
         # else, purify participants and return them after saving.
         participants = get_participants()
-
-        # TODO
-
 
         df = participants
         df['sum'] = 1
         df['role_sum'] = 1
         for i in range(len(df)):
             if (df['role'][i] == 0):
-                df.at[i,'role_sum'] = 1
+                df.at[i, 'role_sum'] = 1
             elif (df['role'][i] == 1):
                 df.at[i, 'role_sum'] = 10
             elif (df['role'][i] == 2):
@@ -218,22 +240,7 @@ def get_pure_participants():
         df3 = pd.DataFrame()
         df3['match_id'] = array_FIND_TEAMMATES_10
 
-        participants = participants.merge(df3, on = 'match_id')
-
-        # test
-
-        #print(participants)
-        role_0 = participants.iloc[np.where(participants['role'] == 0)]
-        role_1 = participants.iloc[np.where(participants['role'] == 1)]
-        role_2 = participants.iloc[np.where(participants['role'] == 2)]
-        role_3 = participants.iloc[np.where(participants['role'] == 3)]
-        role_4 = participants.iloc[np.where(participants['role'] == 4)]
-
-        #print(len(role_0))
-        #print(len(role_1))
-        #print(len(role_2))
-        #print(len(role_3))
-        #print(len(role_4))
+        participants = participants.merge(df3, on='match_id')
 
         pure_participants = participants
         pure_participants.to_csv(LOCAL_PURE_PARTICIPANTS_URL, index=False, encoding=ENCODING)
@@ -242,5 +249,6 @@ def get_pure_participants():
 
 
 if __name__ == '__main__':
+    print(get_bans())
     print(get_pure_participants())
     print(get_champs())
