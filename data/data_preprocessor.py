@@ -64,7 +64,7 @@ def get_draft_statuses():
         draft_statuses = pd.read_csv(LOCAL_DRAFT_STATUSES_URL, low_memory=False, encoding=ENCODING)
     else:
         participants = get_pure_participants()
-        participants[CAL_CHAMP] = (participants[CHAMPION_ID] - 1) * 5 + participants['role']
+        participants[CAL_CHAMP] = participants[CHAMPION_ID] * 5 + participants['role']
 
         player_1 = participants.groupby(MATCH_ID)[CAL_CHAMP].nth(0).reset_index()
         player_2 = participants.groupby(MATCH_ID)[CAL_CHAMP].nth(1).reset_index()
