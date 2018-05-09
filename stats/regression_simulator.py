@@ -200,7 +200,8 @@ def calculate_p_value(model, train_Xs, train_Ys):
 
 
 if __name__ == '__main__':
-    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set()
+    test_size = 0.995
+    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set(test_size=test_size)
     model, accuracy, f1_score, AUC = build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys)
     save_model(model)
     p = calculate_p_value(model, train_Xs, train_Ys)
