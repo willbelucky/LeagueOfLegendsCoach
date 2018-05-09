@@ -18,7 +18,7 @@ COMPETITIVE_DISTANCE_PATH = "stats/competitive_distances.csv"
 def calculate_distances(team_matches_csv, team_wins_csv):
     team_matches = pd.read_csv(team_matches_csv).as_matrix()
     team_wins = pd.read_csv(team_wins_csv).as_matrix()
-    team_wins += 1e-10
+    # team_wins += 1e-10
     # If there is no game, set the winning probability 50%.
     winning_probability = np.divide(team_wins, team_matches)
     winning_probability[np.where(np.isnan(winning_probability))] = 0.5
