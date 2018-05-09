@@ -189,7 +189,53 @@ def get_pure_participants():
         participants = get_participants()
 
         # TODO
-        pure_participants = None
+
+
+        df = participants
+        df['sum'] = 1
+        df['role_sum'] = 1
+        for i in range(len(df)):
+            if (df['role'][i] == 0):
+                df.at[i,'role_sum'] = 1
+            elif (df['role'][i] == 1):
+                df.at[i, 'role_sum'] = 10
+            elif (df['role'][i] == 2):
+                df.at[i, 'role_sum'] = 100
+            elif (df['role'][i] == 3):
+                df.at[i, 'role_sum'] = 1000
+            elif (df['role'][i] == 4):
+                df.at[i, 'role_sum'] = 10000
+            else:
+                df.at[i, 'role_sum'] = 10000000
+
+        df2 = df.groupby('match_id').sum()
+
+        FIND_TEAMMATES_10 = df2.iloc[np.where(df2['sum'] == 10)]
+        FIND_ROLE_20 = FIND_TEAMMATES_10.iloc[np.where(FIND_TEAMMATES_10['role_sum'] == 22222)]
+        FIND_ROLE_20 = FIND_ROLE_20.index
+        array_FIND_TEAMMATES_10 = np.array(FIND_ROLE_20)
+
+        df3 = pd.DataFrame()
+        df3['match_id'] = array_FIND_TEAMMATES_10
+
+        participants = participants.merge(df3, on = 'match_id')
+
+        # test
+
+        #print(participants)
+        role_0 = participants.iloc[np.where(participants['role'] == 0)]
+        role_1 = participants.iloc[np.where(participants['role'] == 1)]
+        role_2 = participants.iloc[np.where(participants['role'] == 2)]
+        role_3 = participants.iloc[np.where(participants['role'] == 3)]
+        role_4 = participants.iloc[np.where(participants['role'] == 4)]
+
+        #print(len(role_0))
+        #print(len(role_1))
+        #print(len(role_2))
+        #print(len(role_3))
+        #print(len(role_4))
+
+        pure_participants = participants
         pure_participants.to_csv(LOCAL_PURE_PARTICIPANTS_URL, index=False, encoding=ENCODING)
 
     return pure_participants
