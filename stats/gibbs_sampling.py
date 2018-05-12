@@ -80,6 +80,7 @@ def get_mcmc_betas(train_Ys, train_Xs, n_init=200000, tune=500):
         trace = pm.sample()
         summary = pm.summary(trace)
         pm.traceplot(trace)
+        plt.savefig('stats/posterior_distribution.png')
         plt.show()
 
     mcmc_betas = summary['mean']

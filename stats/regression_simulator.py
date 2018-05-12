@@ -15,7 +15,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-from data.data_reader import get_champs, get_pure_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID
+from data.data_reader import get_champs, get_pure_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID, MATCH_ID, TEAM
 from stats.distance_calculator import calculate_collaborative_distances, calculate_competitive_distances
 
 MODEL_PATH = 'stats/logistic_regression.pkl'
@@ -40,10 +40,9 @@ def get_data_set(test_size=0.2):
     # Get Xs from get_collaborative_distances and get_competitive_distances.
     champs = get_champs()
     champs = champs.reset_index()
-    used_champions = participants[[PARTICIPANT_ID, CHAMPION_ID, ROLE]]
-    used_champions = pd.merge(used_champions, champs, on=(CHAMPION_ID, ROLE))
-    used_champions = used_champions.sort_values(by=PARTICIPANT_ID)
-    champion_indexes = used_champions['index'].values
+    participants = pd.merge(participants, champs, on=(CHAMPION_ID, ROLE))
+    participants = participants.sort_values(by=[MATCH_ID, TEAM, ROLE], ascending=[True, False, True])
+    champion_indexes = participants['index'].values
 
     # First 5 champions were in blue team, and next 5 champions were in red team.
     match_number = len(Ys)
@@ -200,10 +199,10 @@ def calculate_p_value(model, train_Xs, train_Ys):
 
 
 if __name__ == '__main__':
-    test_size = 0.995
+    test_size = 0.2
     train_Xs, test_Xs, train_Ys, test_Ys = get_data_set(test_size=test_size)
     model, accuracy, f1_score, AUC = build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys)
     save_model(model)
     p = calculate_p_value(model, train_Xs, train_Ys)
     result = pd.DataFrame(data={'coefficient': model.coef_[0], 'p-value': p[0]})
-    result.to_csv('stats/result_{}_{}_{}.csv'.format(accuracy, f1_score, AUC))
+    result.to_csv('stats/regression_result.csv')
