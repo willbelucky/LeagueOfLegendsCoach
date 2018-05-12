@@ -250,7 +250,7 @@ if __name__ == '__main__':
         print('Start {}'.format(multiprocessing.Process()))
         func, path = args[0]
         same_team_matches = pd.DataFrame(func())
-        same_team_matches.to_csv(path)
+        same_team_matches.to_csv(path, index=False)
         print('Done {}'.format(multiprocessing.Process()))
         return same_team_matches
 

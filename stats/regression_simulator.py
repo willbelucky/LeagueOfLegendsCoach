@@ -109,7 +109,7 @@ def plot_roc_curve(fpr, tpr, AUC, title=None, label=None, color='darkorange'):
 
 # noinspection PyPep8Naming
 def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
-                         title=None, confusion_matrix_plotting=False, roc_curve_plotting=False):
+                         title=None, confusion_matrix_plotting=False, roc_curve_plotting=False, postfix=''):
     """
 
     :param y_actual: (ndarray[float]) The actual y values.
@@ -118,6 +118,7 @@ def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
     :param confusion_matrix_plotting: (bool) If confusion_matrix_plotting is True, plot the confusion matrix.
     :param roc_curve_plotting: (bool) If roc_curve_plotting is True,
         plot the ROC(Receiver Operating Characteristic) curve.
+    :param postfix: (string) The postfix of saved files.
 
     :return accuracy: (float) The portion of correct predictions.
     :return f1_score: (float) The harmonic mean of precision and recall
@@ -139,12 +140,14 @@ def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
 
     if confusion_matrix_plotting:
         plot_confusion_matrix(y_actual, y_prediction, title=title)
+        plt.savefig('stats/confusion_matrix_{}.png'.format(postfix))
         plt.show()
 
     if roc_curve_plotting:
         plt.figure()
         plot_roc_curve(fpr, tpr, AUC, title=title)
         plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+        plt.savefig('stats/roc_curve_{}.png'.format(postfix))
         plt.show()
 
     return accuracy, f1_score, AUC
@@ -167,7 +170,8 @@ def build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys):
     logistic.fit(train_Xs, train_Ys)
     predicted_Ys = logistic.predict(test_Xs)
 
-    accuracy, f1_score, AUC = evaluate_predictions(test_Ys, predicted_Ys, 'Blue team win probability(%)', True, True)
+    accuracy, f1_score, AUC = evaluate_predictions(test_Ys, predicted_Ys, 'Blue team win probability(%)', True, True,
+                                                   postfix='regression')
 
     return logistic, accuracy, f1_score, AUC
 

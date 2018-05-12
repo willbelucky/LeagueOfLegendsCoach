@@ -3,6 +3,7 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 5. 8.
 """
+import os
 import matplotlib.pyplot as plt
 import pandas
 import pymc3 as pm
@@ -14,7 +15,7 @@ from stats.regression_simulator import get_data_set
 plt.style.use('seaborn-darkgrid')
 
 
-def get_mcmc_betas(train_Ys, train_Xs, n_init=200000, tune=500):
+def get_mcmc_betas(train_Ys, train_Xs):
     """
 
     :return mcmc_betas: (Series) Coefficients of intercept and betas.
@@ -77,7 +78,7 @@ def get_mcmc_betas(train_Ys, train_Xs, n_init=200000, tune=500):
                          ' + X_31 + X_32 + X_33 + X_34 + X_35 + X_36 + X_37 + X_38 + X_39 + X_40'
                          ' + X_41 + X_42 + X_43 + X_44 + X_45',
                          train_data, family=Binomial())
-        trace = pm.sample()
+        trace = pm.sample(cores=os.cpu_count())
         summary = pm.summary(trace)
         pm.traceplot(trace)
         plt.savefig('stats/posterior_distribution.png')
@@ -88,7 +89,7 @@ def get_mcmc_betas(train_Ys, train_Xs, n_init=200000, tune=500):
 
 
 if __name__ == '__main__':
-    test_size = 0.995
+    test_size = 0.2
     train_Xs, test_Xs, train_Ys, test_Ys = get_data_set(test_size=test_size)
     mcmc_betas = get_mcmc_betas(train_Ys, train_Xs)
     print(mcmc_betas)
