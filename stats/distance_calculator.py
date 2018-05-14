@@ -26,7 +26,7 @@ def calculate_distances(team_matches_csv, team_wins_csv):
     losing_probability = 1 - winning_probability
     # Calculate the distances between collaborative players.
     distances = get_distances(losing_probability)
-    distances = pd.DataFrame(np.array(distances).reshape(CHAMPION_SIZE, CHAMPION_SIZE))
+    distances = pd.DataFrame(np.array(distances[:, 1:]).reshape(CHAMPION_SIZE, CHAMPION_SIZE))
     # Return stats/collaborative_distance.csv as a 690 * 690 numpy.ndarray.
     distances = distances.as_matrix()
     return distances

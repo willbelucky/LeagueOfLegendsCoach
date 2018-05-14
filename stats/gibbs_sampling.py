@@ -3,26 +3,23 @@
 :Author: Jaekyoung Kim
 :Date: 2018. 5. 8.
 """
+import os
 import matplotlib.pyplot as plt
 import pandas
 import pymc3 as pm
 from pymc3.glm import GLM
 from pymc3.glm.families import Binomial
 
-from stats.simulator import get_data_set
+from stats.regression_simulator import get_data_set
 
 plt.style.use('seaborn-darkgrid')
 
 
-def get_mcmc_betas(test_size=0.995):
+def get_mcmc_betas(train_Ys, train_Xs):
     """
-
-    :param test_size: % of test data. test_size should be bigger than 0 and less than 1.
 
     :return mcmc_betas: (Series) Coefficients of intercept and betas.
     """
-    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set(test_size=test_size)
-
     print('train_size:', len(train_Xs))
 
     train_data = pandas.DataFrame({
@@ -81,9 +78,10 @@ def get_mcmc_betas(test_size=0.995):
                          ' + X_31 + X_32 + X_33 + X_34 + X_35 + X_36 + X_37 + X_38 + X_39 + X_40'
                          ' + X_41 + X_42 + X_43 + X_44 + X_45',
                          train_data, family=Binomial())
-        trace = pm.sample()
+        trace = pm.sample(cores=os.cpu_count())
         summary = pm.summary(trace)
         pm.traceplot(trace)
+        plt.savefig('stats/posterior_distribution.png')
         plt.show()
 
     mcmc_betas = summary['mean']
@@ -91,6 +89,7 @@ def get_mcmc_betas(test_size=0.995):
 
 
 if __name__ == '__main__':
-    test_size = 0.995
-    mcmc_betas = get_mcmc_betas(test_size)
+    test_size = 0.2
+    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set(test_size=test_size)
+    mcmc_betas = get_mcmc_betas(train_Ys, train_Xs)
     print(mcmc_betas)

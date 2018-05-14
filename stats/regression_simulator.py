@@ -15,7 +15,7 @@ from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-from data.data_reader import get_champs, get_pure_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID
+from data.data_reader import get_champs, get_pure_participants, WIN, CHAMPION_ID, ROLE, PARTICIPANT_ID, MATCH_ID, TEAM
 from stats.distance_calculator import calculate_collaborative_distances, calculate_competitive_distances
 
 MODEL_PATH = 'stats/logistic_regression.pkl'
@@ -40,10 +40,9 @@ def get_data_set(test_size=0.2):
     # Get Xs from get_collaborative_distances and get_competitive_distances.
     champs = get_champs()
     champs = champs.reset_index()
-    used_champions = participants[[PARTICIPANT_ID, CHAMPION_ID, ROLE]]
-    used_champions = pd.merge(used_champions, champs, on=(CHAMPION_ID, ROLE))
-    used_champions = used_champions.sort_values(by=PARTICIPANT_ID)
-    champion_indexes = used_champions['index'].values
+    participants = pd.merge(participants, champs, on=(CHAMPION_ID, ROLE))
+    participants = participants.sort_values(by=[MATCH_ID, TEAM, ROLE], ascending=[True, False, True])
+    champion_indexes = participants['index'].values
 
     # First 5 champions were in blue team, and next 5 champions were in red team.
     match_number = len(Ys)
@@ -110,7 +109,7 @@ def plot_roc_curve(fpr, tpr, AUC, title=None, label=None, color='darkorange'):
 
 # noinspection PyPep8Naming
 def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
-                         title=None, confusion_matrix_plotting=False, roc_curve_plotting=False):
+                         title=None, confusion_matrix_plotting=False, roc_curve_plotting=False, postfix=''):
     """
 
     :param y_actual: (ndarray[float]) The actual y values.
@@ -119,6 +118,7 @@ def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
     :param confusion_matrix_plotting: (bool) If confusion_matrix_plotting is True, plot the confusion matrix.
     :param roc_curve_plotting: (bool) If roc_curve_plotting is True,
         plot the ROC(Receiver Operating Characteristic) curve.
+    :param postfix: (string) The postfix of saved files.
 
     :return accuracy: (float) The portion of correct predictions.
     :return f1_score: (float) The harmonic mean of precision and recall
@@ -140,12 +140,14 @@ def evaluate_predictions(y_actual: np.ndarray, y_prediction: np.ndarray,
 
     if confusion_matrix_plotting:
         plot_confusion_matrix(y_actual, y_prediction, title=title)
+        plt.savefig('stats/confusion_matrix_{}.png'.format(postfix))
         plt.show()
 
     if roc_curve_plotting:
         plt.figure()
         plot_roc_curve(fpr, tpr, AUC, title=title)
         plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+        plt.savefig('stats/roc_curve_{}.png'.format(postfix))
         plt.show()
 
     return accuracy, f1_score, AUC
@@ -168,7 +170,8 @@ def build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys):
     logistic.fit(train_Xs, train_Ys)
     predicted_Ys = logistic.predict(test_Xs)
 
-    accuracy, f1_score, AUC = evaluate_predictions(test_Ys, predicted_Ys, 'Blue team win probability(%)', True, True)
+    accuracy, f1_score, AUC = evaluate_predictions(test_Ys, predicted_Ys, 'Blue team win probability(%)', True, True,
+                                                   postfix='regression')
 
     return logistic, accuracy, f1_score, AUC
 
@@ -200,9 +203,10 @@ def calculate_p_value(model, train_Xs, train_Ys):
 
 
 if __name__ == '__main__':
-    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set()
+    test_size = 0.2
+    train_Xs, test_Xs, train_Ys, test_Ys = get_data_set(test_size=test_size)
     model, accuracy, f1_score, AUC = build_simulation_model(train_Xs, test_Xs, train_Ys, test_Ys)
     save_model(model)
     p = calculate_p_value(model, train_Xs, train_Ys)
     result = pd.DataFrame(data={'coefficient': model.coef_[0], 'p-value': p[0]})
-    result.to_csv('stats/result_{}_{}_{}.csv'.format(accuracy, f1_score, AUC))
+    result.to_csv('stats/regression_result.csv')
